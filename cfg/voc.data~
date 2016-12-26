@@ -1,0 +1,6 @@
+classes= 20
+train  = /media/jinfagang-workspace/Public-Files/VOC/darknet/train.txt
+valid  = /media/jinfagang-workspace/Public-Files/VOC/darknet/valid.txt
+names = data/voc.names
+backup = backup
+

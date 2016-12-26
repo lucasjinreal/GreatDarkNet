@@ -1,0 +1,11 @@
+classes= 1
+train  = /media/jinfagang-workspace/Public-Files/kitti/KITTI/train.txt
+
+eval  = /media/jinfagang-workspace/Public-Files/kitti/KITTI/test.txt
+
+test = /media/jinfagang-workspace/Public-Files/kitti/KITTI/test.txt
+names = data/kitti.names
+valid = data/test.list
+backup = /media/jinfagang-workspace/Public-Files/kitti/darknet/backup/
+results = /media/jinfagang-workspace/Public-Files/kitti/darknet/results/
+
