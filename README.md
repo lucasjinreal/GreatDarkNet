@@ -29,7 +29,8 @@ x_1 is the left x coordinate, y_1 is the bottom y coordinate, x_2 is the right x
 This is the last step of your datasets setup, and it is easy too! You just only place all your test images into TestImages which mkdir in MyDatasets directory, and just alongside the TrainImages folder.Ok, you are all done!
 
 
-* ## Change Some Config File of GreatDarkNet
+
+## Change Some Config File of GreatDarkNet
 
 
 **1. make GreatDarkNet and change Makefile**
@@ -61,7 +62,7 @@ backup; this is the directory of weigths save, just left it do not change it
 results: this is the save path of predict labels.
 
 
-* ## Test Model and Generate All Image Predict txt File
+## Test Model and Generate All Image Predict txt File
 Just type this commond in terminal:
 ```
 ./darknet detector test cfg/voc.data cfg/yolo-voc.cfg backup/yolo-voc_12000.weights
@@ -71,7 +72,7 @@ Just type this commond in terminal:
 'backup/yolo-voc_12000.weights' is the model weights which you have trained.
 
 
-* ## Predict Single Image using GreatDarkNet
+## Predict Single Image using GreatDarkNet
 To predict just type this commond:
 ```
 ./darknet detect cfg/yolo-voc.cfg backup/yolo-voc_12000.weights data/test.jpg
