@@ -4,6 +4,7 @@ GreatDarkNet was the edit version of [darknet](http://pjreddie.com/darknet/) cre
 * ## Preparing Data for GreatDarkNet
 
 **1. get your all image train paths in a single txt file**
+
 For example, you have a dataset which has 7000 images for train, and 2000 images for test. You can simply place your train images in a single file, says "MyDatasets" just along side your GreatDarkNet directory. And inside MyDatasets you can mkdir a TrainImages and a TestImages folder.So, just drop all your train images into TrainImages folder, and live anything else to GreatDarkNet.
 
 **2. get your image labels**
@@ -26,6 +27,7 @@ x_1 is the left x coordinate, y_1 is the bottom y coordinate, x_2 is the right x
 **3. get your test images**
 
 This is the last step of your datasets setup, and it is easy too! You just only place all your test images into TestImages which mkdir in MyDatasets directory, and just alongside the TrainImages folder.Ok, you are all done!
+
 
 * ## Change Some Config File of GreatDarkNet
 
@@ -58,6 +60,7 @@ names: this is your classes names file inside data/ directory, you may create it
 backup; this is the directory of weigths save, just left it do not change it
 results: this is the save path of predict labels.
 
+
 * ## Test Model and Generate All Image Predict txt File
 Just type this commond in terminal:
 ```
@@ -66,6 +69,7 @@ Just type this commond in terminal:
 `cfg/voc.data` is the data statement tells net where the data is and how to save weights
 `cfg/yolo-voc.cfg` is the structure of yolo-net,
 'backup/yolo-voc_12000.weights' is the model weights which you have trained.
+
 
 * ## Predict Single Image using GreatDarkNet
 To predict just type this commond:
