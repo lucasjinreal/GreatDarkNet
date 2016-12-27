@@ -17,7 +17,7 @@ EXEC=darknet
 OBJDIR=./obj/
 
 CC=gcc
-NVCC=nvcc 
+NVCC=/usr/local/cuda/bin/nvcc 
 OPTS=-Ofast
 LDFLAGS= -lm -pthread 
 COMMON= 

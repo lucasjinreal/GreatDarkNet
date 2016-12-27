@@ -1,11 +1,11 @@
 * ## Preface
-GreatDarkNet was the edit version of [darknet](http://pjreddie.com/darknet/) created by pjreddie. Thanks for the author's excellent work. The purpose of redesign of darknet was for other people to train their own data and get the predict result. I will give you a detail usage of this version of darknet which can be called **GreatDarkNet**.
+GreatDarknet was the edit version of [darknet](http://pjreddie.com/darknet/) created by pjreddie. Thanks for the author's excellent work. The purpose of redesign of darknet was for other people to train their own data and get the predict result. I will give you a detail usage of this version of darknet which can be called **GreatDarknet**.
 
-* ## Preparing Data for GreatDarkNet
+* ## Preparing Data for GreatDarknet
 
 **1. get your all image train paths in a single txt file**
 
-For example, you have a dataset which has 7000 images for train, and 2000 images for test. You can simply place your train images in a single file, says "MyDatasets" just along side your GreatDarkNet directory. And inside MyDatasets you can mkdir a TrainImages and a TestImages folder.So, just drop all your train images into TrainImages folder, and live anything else to GreatDarkNet.
+For example, you have a dataset which has 7000 images for train, and 2000 images for test. You can simply place your train images in a single file, says "MyDatasets" just along side your GreatDarknet directory. And inside MyDatasets you can mkdir a TrainImages and a TestImages folder.So, just drop all your train images into TrainImages folder, and live anything else to GreatDarknet.
 
 **2. get your image labels**
 
@@ -29,11 +29,13 @@ x_1 is the left x coordinate, y_1 is the bottom y coordinate, x_2 is the right x
 This is the last step of your datasets setup, and it is easy too! You just only place all your test images into TestImages which mkdir in MyDatasets directory, and just alongside the TrainImages folder.Ok, you are all done!
 
 
+**4. just place your labels and train images into one folder**
+This is very important, do not ask why just put your images file and labels file into a single folder togther and GreatDarknet will automatic get them and start train.
 
-## Change Some Config File of GreatDarkNet
+## Change Some Config File of GreatDarknet
 
 
-**1. make GreatDarkNet and change Makefile**
+**1. make GreatDarknet and change Makefile**
 
 Simply sudo vim MakeFile and change the following value:
 ```
@@ -50,17 +52,25 @@ If you train your own dataset, you must tell GreatDartknet where your images and
 ```
 classes= 1
 train  = ~/MyDataSets/train.txt
-names = ~/GreatDarkNet/data/kitti.names
-backup = ~/GreatDarkNet/backup/
-results = ~/GreatDarkNet/results/
+names = ~/GreatDarknet/data/names.list
+backup = ~/GreatDarknet/backup/
+results = ~/GreatDarknet/results/
 ```
 **Here is the explain**:
 classed: this is all your classes in your datasets
 train: this is the train.txt file which contains all your image path, we generated it above.
-names: this is your classes names file inside data/ directory, you may create it now and format is just like voc.names, every single line is a name.
+names: this is your classes names file inside data/ directory, you may change its content but **Do not change file name!**.
 backup; this is the directory of weigths save, just left it do not change it
 results: this is the save path of predict labels.
+so , in this step, you just only need to **Change your train list path and names.list content!**
 
+## Train your model with your own datasets!
+
+Just type this command:
+```
+./darknet detector train cfg/voc.data cfg/yolo-voc.cfg darknet19_448.conv.23
+```
+`darknet19_448.conv.23' is the pretrained model weights.
 
 ## Test Model and Generate All Image Predict txt File
 Just type this commond in terminal:
@@ -72,9 +82,9 @@ Just type this commond in terminal:
 'backup/yolo-voc_12000.weights' is the model weights which you have trained.
 
 
-## Predict Single Image using GreatDarkNet
+## Predict Single Image using GreatDarknet
 To predict just type this commond:
 ```
-./darknet detect cfg/yolo-voc.cfg backup/yolo-voc_12000.weights data/test.jpg
+./darknet detector predict cfg/voc.data cfg/yolo-voc.cfg backup/yolo-voc_12000.weights data/test.jpg
 ```
 And there it is! You now have a Intelligent Net which can recogonise specify objects!!!!

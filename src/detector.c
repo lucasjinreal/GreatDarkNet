@@ -450,8 +450,6 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char *name_list = option_find_str(options, "names", "data/names.list");
     char **names = get_labels(name_list);
 
-    //file name distribute memory
-    //char *filename[1024];
     image **alphabet = load_alphabet();
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
@@ -462,13 +460,13 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     clock_t time;
     char buff[256];
     char *input = buff;
-    //hard code the file here for test
-    //test_txt_file_path = "/media/jinfagang-workspace/Public-Files/kitti/KITTI/ImagesTrain/007207.png";
+
     char *test_txt_file_path;
-    test_txt_file_path = "/media/jinfagang-workspace/Public-Files/VOC/darknet/data/test.txt";
+    //For test you must change this path!
+    test_txt_file_path = "/media/jinfagang-workspace/Jinfagang-Use/YOLO/KITTI/test.txt";
     char *result_save_path;
     //this path must exist or will cause dump!!
-    result_save_path = "/media/jinfagang-workspace/Public-Files/kitti/darknet/results/kitti_test/";
+    result_save_path = "/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian/";
     FILE *testfp = fopen(test_txt_file_path, "r+");
     if(testfp == NULL){
        printf("Failed open file");
@@ -481,18 +479,13 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char *delimer = "/";
     char *image_file_name[1024];
     //read the test.txt file every line will be a predict image path
-    //
     //The path of every txt file
     char *save_txt_path[10240];
     while(fgets(line_image_path, sizeof(line_image_path), testfp)){
         strtok(line_image_path, "\n");
-        printf("=====>>>>%s\n", line_image_path);
-
         filename = line_image_path;
         strcpy(image_path_dummy, line_image_path);
-        printf("=====%s\n", filename);
 
-        printf("%s\n", strtok(image_path_dummy, delimer));
         while((p = strtok(NULL, delimer))){
             printf("%s \n", p);
             strcpy(last, p);
@@ -501,7 +494,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 
         printf("Image File Name=====>>>%s\n", image_file_name);
 
-        strcpy(save_txt_path, "/media/jinfagang-workspace/Public-Files/kitti/darknet/results/kitti_test/");
+        strcpy(save_txt_path, "/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian/");
         strcat(save_txt_path, image_file_name);
         strcat(save_txt_path, ".txt");
 
@@ -570,16 +563,11 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
                printf("%s, %d, %d. %d, %d, %.2f\n", names[class_i], left, right, top, bot, prob);
                printf("%s, %d, %d. %d, %d, %f\n", names[class_i], left, right, top, bot, prob);
                printf("%s, %d, %d. %d, %d,  %.0f%%\n", names[class_i], left, right, top, bot, prob*100);
-               fprintf(test_labels_fp, "%s %s %d %d %d %d %f\n", temp_image_name, names[class_i], left, top, right, bot, prob);
+               fprintf(test_labels_fp, "%s %s %f %f %f %f %f\n", temp_image_name, names[class_i], left, top, right, bot, prob);
 
 
            }
-//           int *m;
-//           for(m=0;m<l.classes;++m){
-//               if(probs[k][m]){
-//                  printf("%d, %d, %d. %d, %d, %f\n", class, left, right, top, bot, probs[k][m]);
-//               }
-//           }
+
 
         }
 
@@ -605,6 +593,64 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     fclose(testfp);
     printf("========Congratuations! You have all Done!");
 
+}
+
+void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh)
+{
+    list *options = read_data_cfg(datacfg);
+    char *name_list = option_find_str(options, "names", "data/names.list");
+    char **names = get_labels(name_list);
+
+    image **alphabet = load_alphabet();
+    network net = parse_network_cfg(cfgfile);
+    if(weightfile){
+        load_weights(&net, weightfile);
+    }
+    set_batch_network(&net, 1);
+    srand(2222222);
+    clock_t time;
+    char buff[256];
+    char *input = buff;
+    int j;
+    float nms=.4;
+    while(1){
+        if(filename){
+            strncpy(input, filename, 256);
+        } else {
+            printf("Enter Image Path: ");
+            fflush(stdout);
+            input = fgets(input, 256, stdin);
+            if(!input) return;
+            strtok(input, "\n");
+        }
+        image im = load_image_color(input,0,0);
+        image sized = resize_image(im, net.w, net.h);
+        layer l = net.layers[net.n-1];
+
+        box *boxes = calloc(l.w*l.h*l.n, sizeof(box));
+        float **probs = calloc(l.w*l.h*l.n, sizeof(float *));
+        for(j = 0; j < l.w*l.h*l.n; ++j) probs[j] = calloc(l.classes, sizeof(float *));
+
+        float *X = sized.data;
+        time=clock();
+        network_predict(net, X);
+        printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+        get_region_boxes(l, 1, 1, thresh, probs, boxes, 0, 0);
+        if (nms) do_nms_sort(boxes, probs, l.w*l.h*l.n, l.classes, nms);
+        draw_detections(im, l.w*l.h*l.n, thresh, boxes, probs, names, alphabet, l.classes);
+        save_image(im, "predictions");
+        show_image(im, "predictions");
+
+        free_image(im);
+        free_image(sized);
+        free(boxes);
+        free_ptrs((void **)probs, l.w*l.h*l.n);
+#ifdef OPENCV
+        cvWaitKey(0);
+        cvDestroyAllWindows();
+#endif
+        if (filename) break;
+    }
 }
 
 void run_detector(int argc, char **argv)
@@ -647,6 +693,7 @@ void run_detector(int argc, char **argv)
     char *weights = (argc > 5) ? argv[5] : 0;
     char *filename = (argc > 6) ? argv[6]: 0;
     if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh);
+    else if(0==strcmp(argv[2], "predict")) predict_detector(datacfg, cfg, weights, filename, thresh);
     else if(0==strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) validate_detector(datacfg, cfg, weights);
     else if(0==strcmp(argv[2], "recall")) validate_detector_recall(cfg, weights);
