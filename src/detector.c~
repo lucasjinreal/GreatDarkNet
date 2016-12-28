@@ -466,7 +466,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     test_txt_file_path = "/media/jinfagang-workspace/Jinfagang-Use/YOLO/KITTI/test.txt";
     char *result_save_path;
     //this path must exist or will cause dump!!
-    result_save_path = "/media/jinfagang-workspace/Public-Files/kitti/darknet/results/kitti_test_pedestrian/";
+    result_save_path = "/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian/";
     FILE *testfp = fopen(test_txt_file_path, "r+");
     if(testfp == NULL){
        printf("Failed open file");
@@ -483,13 +483,9 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char *save_txt_path[10240];
     while(fgets(line_image_path, sizeof(line_image_path), testfp)){
         strtok(line_image_path, "\n");
-        printf("=====>>>>%s\n", line_image_path);
-
         filename = line_image_path;
         strcpy(image_path_dummy, line_image_path);
-        printf("=====%s\n", filename);
 
-        printf("%s\n", strtok(image_path_dummy, delimer));
         while((p = strtok(NULL, delimer))){
             printf("%s \n", p);
             strcpy(last, p);
@@ -498,7 +494,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 
         printf("Image File Name=====>>>%s\n", image_file_name);
 
-        strcpy(save_txt_path, "/media/jinfagang-workspace/Public-Files/kitti/darknet/results/kitti_test_pedestrian/");
+        strcpy(save_txt_path, "/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian/");
         strcat(save_txt_path, image_file_name);
         strcat(save_txt_path, ".txt");
 
@@ -697,6 +693,7 @@ void run_detector(int argc, char **argv)
     char *weights = (argc > 5) ? argv[5] : 0;
     char *filename = (argc > 6) ? argv[6]: 0;
     if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh);
+    else if(0==strcmp(argv[2], "predict")) predict_detector(datacfg, cfg, weights, filename, thresh);
     else if(0==strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) validate_detector(datacfg, cfg, weights);
     else if(0==strcmp(argv[2], "recall")) validate_detector_recall(cfg, weights);

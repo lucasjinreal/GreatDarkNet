@@ -75,12 +75,14 @@ Just type this command:
 ## Test Model and Generate All Image Predict txt File
 Just type this commond in terminal:
 ```
-./darknet detector test cfg/voc.data cfg/yolo-voc.cfg backup/yolo-voc_12000.weights
+./darknet detector test_save cfg/voc.data cfg/yolo-voc.cfg backup/yolo-voc_12000.weights /media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian /media/jinfagang-workspace/Jinfagang-Use/YOLO/KITTI/test.txt
 ```
 `cfg/voc.data` is the data statement tells net where the data is and how to save weights
 `cfg/yolo-voc.cfg` is the structure of yolo-net,
 'backup/yolo-voc_12000.weights' is the model weights which you have trained.
-
+**the last two params is very important.**
+last 1: is the save path prefix, do not add '/' at end of path prefix.
+last 2: is the test.txt file location, use the full path avoid absolute path.
 
 ## Predict Single Image using GreatDarknet
 To predict just type this commond:

@@ -1,8 +1,6 @@
-classes= 1
-train  = /media/jinfagang-workspace/Jinfagang-Use/YOLO/KITTI/train.txt
-
-names = data/names.list
-
-backup = /media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/backup/
-results = /media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/
+classes= 2
+train=/media/jinfagang-workspace/Jinfagang-Use/YOLO/KITTI/train.txt
+names=data/names.list
+backup=/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/backup/
+results=/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/
 

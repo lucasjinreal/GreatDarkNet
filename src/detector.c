@@ -449,13 +449,15 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     list *options = read_data_cfg(datacfg);
     char *name_list = option_find_str(options, "names", "data/names.list");
     char **names = get_labels(name_list);
-
+    printf("All params loaded\n ");
     image **alphabet = load_alphabet();
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);
     }
     set_batch_network(&net, 1);
+    printf("We got something wrong!");
+
     srand(2222222);
     clock_t time;
     char buff[256];
@@ -464,6 +466,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char *test_txt_file_path;
     //For test you must change this path!
     test_txt_file_path = "/media/jinfagang-workspace/Jinfagang-Use/YOLO/KITTI/test.txt";
+    printf("txt file path %s", test_txt_file_path);
     char *result_save_path;
     //this path must exist or will cause dump!!
     result_save_path = "/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian/";
@@ -493,7 +496,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         strcpy(image_file_name, strtok(last, "."));
 
         printf("Image File Name=====>>>%s\n", image_file_name);
-
+        //change this line too!!!
         strcpy(save_txt_path, "/media/jinfagang-workspace/Jinfagang-Use/YOLO/GreatDarknet/results/kitti_test_pedestrian/");
         strcat(save_txt_path, image_file_name);
         strcat(save_txt_path, ".txt");
@@ -595,6 +598,125 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 
 }
 
+void test2_detector(char *datacfg, char *cfgfile, char *weightfile, char *resultsaveprefix, char *testfilepath, float thresh)
+{
+
+    list *options = read_data_cfg(datacfg);
+    char *name_list = option_find_str(options, "names", "data/names.list");
+    char **names = get_labels(name_list);
+    printf("All params loaded\n ");
+    image **alphabet = load_alphabet();
+    network net = parse_network_cfg(cfgfile);
+    if(weightfile){
+        load_weights(&net, weightfile);
+    }
+    set_batch_network(&net, 1);
+    printf("Weights load success!! \n");
+
+    srand(2222222);
+    clock_t time;
+    char buff[256];
+    char *input = buff;
+
+    printf("result save path is %s", resultsaveprefix);
+
+    FILE *testfp = fopen(testfilepath, "r+");
+    if(testfp == NULL){
+       printf("Failed open file");
+    }
+    char *line_image_path[1024];
+
+    char *p;
+    char *last[1024];
+    char *last_png[1024];
+    //read the test.txt file every line will be a predict image path
+    //The path of every txt file
+    char *save_txt_path[1024];
+    while(fgets(line_image_path, sizeof(line_image_path), testfp)){
+        strtok(line_image_path, "\n");
+
+        //get the txt suffix for save txt file name
+        strcpy(last, strrchr(line_image_path, '/'));
+        printf("%s", last);
+        strcpy(last_png, last);
+        strtok(last, ".");
+
+//        //change this line too!!!
+        strcpy(save_txt_path, resultsaveprefix);
+        strcat(save_txt_path, last);
+        strcat(save_txt_path, ".txt");
+
+        printf("\nSave TXT path %s\n", save_txt_path);
+        int j;
+        float nms=.4;
+
+
+        image im = load_image_color(line_image_path,0,0);
+        image sized = resize_image(im, net.w, net.h);
+        layer l = net.layers[net.n-1];
+
+        box *boxes = calloc(l.w*l.h*l.n, sizeof(box));
+        float **probs = calloc(l.w*l.h*l.n, sizeof(float *));
+        for(j = 0; j < l.w*l.h*l.n; ++j) probs[j] = calloc(l.classes, sizeof(float *));
+
+        float *X = sized.data;
+        time=clock();
+        network_predict(net, X);
+        printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+        get_region_boxes(l, 1, 1, thresh, probs, boxes, 0, 0);
+        if (nms) do_nms_sort(boxes, probs, l.w*l.h*l.n, l.classes, nms);
+        int k = 0;
+
+        //save labels
+        FILE *test_labels_fp;
+        test_labels_fp = fopen(save_txt_path, "w+");
+
+        printf("=====>>>Starting save file!\n");
+
+        for(k=0;k<l.w*l.h*l.n;++k){
+           box b =  boxes[k];
+           int left  = (b.x-b.w/2.)*im.w;
+           int right = (b.x+b.w/2.)*im.w;
+           int top   = (b.y-b.h/2.)*im.h;
+           int bot   = (b.y+b.h/2.)*im.h;
+
+           if(left < 0) left = 0;
+           if(right > im.w-1) right = im.w-1;
+           if(top < 0) top = 0;
+           if(bot > im.h-1) bot = im.h-1;
+
+           int class_i = max_index(probs[k], l.classes);
+           float prob = probs[k][class_i];
+
+           //thresh changing here!
+           if(prob > 0.01){
+               printf("%s, %d, %d. %d, %d, %.2f\n", names[class_i], left, right, top, bot, prob);
+               printf("%s, %d, %d. %d, %d, %f\n", names[class_i], left, right, top, bot, prob);
+               printf("%s, %d, %d. %d, %d,  %.0f%%\n", names[class_i], left, right, top, bot, prob*100);
+               fprintf(test_labels_fp, "%s %s %f %f %f %f %f\n", last_png, names[class_i], left, top, right, bot, prob);
+
+           }
+        }
+
+        fclose(test_labels_fp);
+        printf("====!!!!!^^One Images has been successfully predicted!!\n");
+        draw_detections(im, l.w*l.h*l.n, thresh, boxes, probs, names, alphabet, l.classes);
+
+
+        save_image(im, "predictions");
+        show_image(im, "predictions");
+
+        free_image(im);
+        free_image(sized);
+        free(boxes);
+        free_ptrs((void **)probs, l.w*l.h*l.n);
+    }
+
+    fclose(testfp);
+    printf("Congratuations! You have all Done!");
+
+}
+
 void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh)
 {
     list *options = read_data_cfg(datacfg);
@@ -692,7 +814,9 @@ void run_detector(int argc, char **argv)
     char *cfg = argv[4];
     char *weights = (argc > 5) ? argv[5] : 0;
     char *filename = (argc > 6) ? argv[6]: 0;
+    char *testfilepath = (argc > 7)? argv[7]: 0;
     if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh);
+    else if(0==strcmp(argv[2], "test2_save")) test2_detector(datacfg, cfg, weights, filename, testfilepath, thresh);
     else if(0==strcmp(argv[2], "predict")) predict_detector(datacfg, cfg, weights, filename, thresh);
     else if(0==strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) validate_detector(datacfg, cfg, weights);
